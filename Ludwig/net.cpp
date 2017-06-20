@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <winsock2.h>
+#include <Ws2tcpip.h>
 #include <windows.h>
 
 #pragma comment(lib,"ws2_32.lib")
@@ -54,7 +55,9 @@ DWORD WINAPI server_thread(LPVOID pM)
         {
             printf("accept error !");
         }
-        printf("接受到一个连接：%s \r\n", inet_ntoa(remoteAddr.sin_addr));
+		char IPdotdec[20];
+		inet_ntop(AF_INET, &remoteAddr.sin_addr, IPdotdec, 16);
+        printf("接受到一个连接：%s \r\n", IPdotdec);
         
 		while (true) {
 			//接收数据
@@ -90,7 +93,7 @@ DWORD WINAPI client_thread(LPVOID pM)
 	sockaddr_in serAddr;
 	serAddr.sin_family = AF_INET;
 	serAddr.sin_port = htons(8888);
-	serAddr.sin_addr.S_un.S_addr = inet_addr("127.0.0.1");
+	inet_pton(AF_INET, "127.0.0.1", &serAddr.sin_addr.S_un.S_addr);
 	if (connect(sclient, (sockaddr *)&serAddr, sizeof(serAddr)) == SOCKET_ERROR)
 	{
 		printf("connect error !");

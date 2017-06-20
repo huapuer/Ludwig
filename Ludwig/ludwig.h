@@ -1,7 +1,12 @@
-typedef void(*fp_integrate)(gen_t*, int);
-typedef void(*fp_mute)(gen_w*, const unsigned long long);
-typedef void(*fp_clear_push)(const gen_t *, gen_t *, int, gen_w*, const int, const unsigned long long);
-typedef void(*fp_push)(const gen_t*, gen_t*, int, gen_w*, const int, const unsigned long long);
+#include <stdio.h>
+#include <Windows.h>
+
+struct layer_t;
+struct link;
+struct gen_t;
+struct gen_w;
+
+extern layer_t* layer_list;
 
 enum layer_type {
 	LAYER_PHSICAL,
@@ -27,9 +32,9 @@ struct layer_t {
 	link* pre;
 	link* next;
 	layer_t* follow;
-	fp_integrate integrate_fn;
-	fp_clear_push clear_push_fn;
-	fp_push push_fn;
+	void* integrate_fn;
+	void* clear_push_fn;
+	void* push_fn;
 
 	//phsical
 	unsigned long long gen;
@@ -42,7 +47,6 @@ struct layer_t {
 	int cur_s_dev_t;
 	int cur_t_dev_t;
 	gen_t *dev_t[2];
-	const float* dev_atte;
 	layer_t* logical_head;
 	layer_t* logical_tail;
 
@@ -63,3 +67,17 @@ struct link {
 	gen_w *dev_t;
 	link* another;
 };
+
+#ifndef _LUDWIG_H_
+#define _LUDWIG_H_
+#ifdef _WINDLL
+#define EXPORTS _declspec(dllexport)
+#else
+#define EXPORTS _declspec(dllimport)
+#endif
+extern "C" EXPORTS layer_t* pick_layer(int);
+extern "C" EXPORTS layer_t* new_layer_phsical(int, int);
+extern "C" EXPORTS layer_t* new_layer_logical(int, int, int, int, bool);
+extern "C" EXPORTS link* new_link(layer_t*, int);
+extern "C" EXPORTS layer_t* has_t(layer_t*, int, layer_t*, int);
+#endif
