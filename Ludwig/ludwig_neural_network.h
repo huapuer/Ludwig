@@ -1,3 +1,4 @@
+#pragma once
 #include <stdio.h>
 #include <Windows.h>
 
@@ -68,8 +69,6 @@ struct link {
 	link* another;
 };
 
-#ifndef _LUDWIG_H_
-#define _LUDWIG_H_
 #ifdef _WINDLL
 #define EXPORTS _declspec(dllexport)
 #else
@@ -80,4 +79,3 @@ extern "C" EXPORTS layer_t* new_layer_phsical(int, int);
 extern "C" EXPORTS layer_t* new_layer_logical(int, int, int, int, bool);
 extern "C" EXPORTS link* new_link(layer_t*, int);
 extern "C" EXPORTS layer_t* has_t(layer_t*, int, layer_t*, int);
-#endif

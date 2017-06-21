@@ -1,5 +1,5 @@
 #include "stdfx.h"
-#include "ludwig.h"
+#include "ludwig_neural_network.h"
 
 layer_t* layer_list = NULL;
 
