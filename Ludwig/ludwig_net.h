@@ -18,5 +18,5 @@ extern "C" EXPORTS void friedrich_talking(int);
 extern "C" EXPORTS void alan_talking(char*, int);
 extern "C" EXPORTS void friedrich_acts(net_events, fp_event_callback);
 extern "C" EXPORTS void alan_acts(net_events, fp_event_callback);
-extern "C" EXPORTS void friedrich_says(net_events, char*, int);
-extern "C" EXPORTS void alan_says(net_events, char*, int);
+extern "C" EXPORTS void friedrich_says(net_events, char*, unsigned long);
+extern "C" EXPORTS void alan_says(net_events, char*, unsigned long);
