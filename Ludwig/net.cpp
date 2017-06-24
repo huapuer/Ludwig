@@ -166,37 +166,6 @@ DWORD WINAPI fiedrich_thread(LPVOID pM)
 
 DWORD WINAPI alan_thread(LPVOID pM)
 {
-	net_config* cfg = (net_config*)pM;
-
-	WORD sockVersion = MAKEWORD(2, 2);
-	WSADATA data;
-	if (WSAStartup(sockVersion, &data) != 0)
-	{
-		return 0;
-	}
-
-	friedrich_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if (friedrich_socket == INVALID_SOCKET)
-	{
-		printf("invalid socket !");
-		return 0;
-	}
-
-	sockaddr_in serAddr;
-	serAddr.sin_family = AF_INET;
-	serAddr.sin_port = htons(cfg->port);
-	inet_pton(AF_INET, cfg->ip_addr, &serAddr.sin_addr.S_un.S_addr);
-	if (connect(friedrich_socket, (sockaddr *)&serAddr, sizeof(serAddr)) == SOCKET_ERROR)
-	{
-		printf("connect error !");
-		closesocket(friedrich_socket);
-		return 0;
-	}
-
-	for (int i = 0; i < 10000; i++) {
-		alan_says(net_events::EVENT_TEST, "Hello, Friedrich!", 17);
-	}
-
 	char recvData[255];
 	net_buffer* nb = new(net_buffer);
 	while (true) {
@@ -218,10 +187,27 @@ void friedrich_talking(int port) {
 }
 
 void alan_talking(char* ip_addr, int port) {
-	net_config* cfg = new net_config();
-	cfg->ip_addr = ip_addr;
-	cfg->port = port;
-	HANDLE handle = CreateThread(NULL, 0, alan_thread, cfg, 0, NULL);
+	WORD sockVersion = MAKEWORD(2, 2);
+	WSADATA data;
+	if (WSAStartup(sockVersion, &data) != 0)
+	{
+		return;
+	}
+
+	friedrich_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if (friedrich_socket == INVALID_SOCKET)
+	{
+		printf("invalid socket !");
+		return;
+	}
+
+	sockaddr_in serAddr;
+	serAddr.sin_family = AF_INET;
+	serAddr.sin_port = htons(port);
+	inet_pton(AF_INET, ip_addr, &serAddr.sin_addr.S_un.S_addr);
+	while (connect(friedrich_socket, (sockaddr *)&serAddr, sizeof(serAddr)) == SOCKET_ERROR);
+
+	HANDLE handle = CreateThread(NULL, 0, alan_thread, NULL, 0, NULL);
 }
 
 void friedrich_acts(net_events ne, fp_event_callback ec) {
