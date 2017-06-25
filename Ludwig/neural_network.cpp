@@ -2,6 +2,7 @@
 #include "ludwig_neural_network.h"
 
 layer_t* layer_list = NULL;
+link* link_list = NULL;
 
 layer_t* pick_layer(int idx) {
 	if (!layer_list) {
@@ -24,7 +25,28 @@ layer_t* pick_layer(int idx) {
 	ERR("COMPILE ERROR: LAYER[%d] NOT EXSISTS!\n", idx);
 }
 
-layer_t* new_layer_phsical(int id, int size) {
+link* pick_link(int idx) {
+	if (!link_list) {
+		ERR("COMPILE ERROR: LINK[%d] NOT EXSISTS!\n", idx);
+	}
+	else {
+		if (link_list->id == idx) {
+			return link_list;
+		}
+		else {
+			link* iter = link_list;
+			while (iter->follow) {
+				if (iter->follow->id == idx) {
+					return iter->follow;
+				}
+				iter = iter->follow;
+			}
+		}
+	}
+	ERR("COMPILE ERROR: LINK[%d] NOT EXSISTS!\n", idx);
+}
+
+layer_t* has_layer_phsical(int id, int size) {
 	layer_t* ret = (layer_t*)malloc(sizeof(layer_t));
 	memset(ret, 0, sizeof(layer_t));
 	ret->id = id;
@@ -53,7 +75,7 @@ layer_t* new_layer_phsical(int id, int size) {
 	return ret;
 }
 
-layer_t* new_layer_logical(int id, int phsical, int offset, int size, bool delegate) {
+layer_t* has_layer_logical(int id, int phsical, int offset, int size, bool delegate) {
 	layer_t* ret = (layer_t*)malloc(sizeof(layer_t));
 	memset(ret, 0, sizeof(layer_t));
 	ret->id = id;
@@ -65,8 +87,6 @@ layer_t* new_layer_logical(int id, int phsical, int offset, int size, bool deleg
 	ret->phsical = pl;
 	ret->offset = offset;
 	ret->integrate_fn = pl->integrate_fn;
-	ret->clear_push_fn = pl->clear_push_fn;
-	ret->push_fn = pl->push_fn;
 
 	if (!pl->logical_head) {
 		pl->logical_head = ret;
@@ -122,7 +142,7 @@ void add_link(link** head, link* next) {
 	}
 }
 
-layer_t* has_t(layer_t* s, int or_another_s, layer_t* next, int or_another_next) {
+layer_t* has_link(int id, link_type type, layer_t* s, int or_another_s, layer_t* next, int or_another_next) {
 	if (!s) {
 		s = pick_layer(or_another_s);
 	}
@@ -136,9 +156,30 @@ layer_t* has_t(layer_t* s, int or_another_s, layer_t* next, int or_another_next)
 	if (!next) {
 		ERR("COMPILE ERROR: LAYER[%d] NOT EXSISTS!\n", or_another_next);
 	}
-	int size = s->size*next->size;
+	int size;
+	switch (type) {
+	case LINK_FORWARD:
+		if (s->size < next->size) {
+			ERR("COMPILE ERROR: LINK[%d]: UNMATCHED LAYER SIZE OF FORWARD LINK!\n", id);
+		}
+		size = s->size;
+		break;
+	case LINK_FULL:
+		size = s->size*next->size;
+		break;
+	}
 	link* l = new_link(next, size);
 	add_link(&s->next, l);
-	//add_link(&next->pre, l);
+
+	if (!link_list) {
+		link_list = l;
+	}
+	else {
+		link* iter = link_list;
+		while (iter->follow) {
+			iter = iter->follow;
+		}
+		iter->follow = l;
+	}
 	return next;
 }

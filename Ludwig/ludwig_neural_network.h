@@ -8,10 +8,16 @@ struct gen_t;
 struct gen_w;
 
 extern layer_t* layer_list;
+extern link* link_list;
 
 enum layer_type {
 	LAYER_PHSICAL,
 	LAYER_LOGICAL
+};
+
+enum link_type {
+	LINK_FORWARD,
+	LINK_FULL
 };
 
 struct gen_t {
@@ -34,8 +40,6 @@ struct layer_t {
 	link* next;
 	layer_t* follow;
 	void* integrate_fn;
-	void* clear_push_fn;
-	void* push_fn;
 
 	//phsical
 	unsigned long long gen;
@@ -59,6 +63,8 @@ struct layer_t {
 };
 
 struct link {
+	int id;
+	link_type type;
 	unsigned long long gen;
 	unsigned long long mutated_gen;
 	unsigned long long mutating_batch;
@@ -67,6 +73,9 @@ struct link {
 	gen_w* t;
 	gen_w *dev_t;
 	link* another;
+	void* clear_push_fn;
+	void* push_fn;
+	link* follow;
 };
 
 #ifdef _WINDLL
@@ -75,7 +84,7 @@ struct link {
 #define EXPORTS _declspec(dllimport)
 #endif
 extern "C" EXPORTS layer_t* pick_layer(int);
-extern "C" EXPORTS layer_t* new_layer_phsical(int, int);
-extern "C" EXPORTS layer_t* new_layer_logical(int, int, int, int, bool);
-extern "C" EXPORTS link* new_link(layer_t*, int);
-extern "C" EXPORTS layer_t* has_t(layer_t*, int, layer_t*, int);
+extern "C" EXPORTS link* pick_link(int);
+extern "C" EXPORTS layer_t* has_layer_phsical(int, int);
+extern "C" EXPORTS layer_t* has_layer_logical(int, int, int, int, bool);
+extern "C" EXPORTS layer_t* has_link(int, link_type, layer_t*, int, layer_t*, int);
