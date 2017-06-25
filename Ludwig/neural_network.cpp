@@ -2,7 +2,6 @@
 #include "ludwig_neural_network.h"
 
 layer_t* layer_list = NULL;
-link* link_list = NULL;
 
 layer_t* pick_layer(int idx) {
 	if (!layer_list) {
@@ -23,27 +22,6 @@ layer_t* pick_layer(int idx) {
 		}
 	}
 	ERR("COMPILE ERROR: LAYER[%d] NOT EXSISTS!\n", idx);
-}
-
-link* pick_link(int idx) {
-	if (!link_list) {
-		ERR("COMPILE ERROR: LINK[%d] NOT EXSISTS!\n", idx);
-	}
-	else {
-		if (link_list->id == idx) {
-			return link_list;
-		}
-		else {
-			link* iter = link_list;
-			while (iter->follow) {
-				if (iter->follow->id == idx) {
-					return iter->follow;
-				}
-				iter = iter->follow;
-			}
-		}
-	}
-	ERR("COMPILE ERROR: LINK[%d] NOT EXSISTS!\n", idx);
 }
 
 layer_t* has_layer_phsical(int id, int size) {
@@ -86,7 +64,6 @@ layer_t* has_layer_logical(int id, int phsical, int offset, int size, bool deleg
 	layer_t* pl = pick_layer(phsical);
 	ret->phsical = pl;
 	ret->offset = offset;
-	ret->integrate_fn = pl->integrate_fn;
 
 	if (!pl->logical_head) {
 		pl->logical_head = ret;
@@ -170,16 +147,5 @@ layer_t* has_link(int id, link_type type, layer_t* s, int or_another_s, layer_t*
 	}
 	link* l = new_link(next, size);
 	add_link(&s->next, l);
-
-	if (!link_list) {
-		link_list = l;
-	}
-	else {
-		link* iter = link_list;
-		while (iter->follow) {
-			iter = iter->follow;
-		}
-		iter->follow = l;
-	}
 	return next;
 }

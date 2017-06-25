@@ -8,7 +8,6 @@ struct gen_t;
 struct gen_w;
 
 extern layer_t* layer_list;
-extern link* link_list;
 
 enum layer_type {
 	LAYER_PHSICAL,
@@ -39,7 +38,6 @@ struct layer_t {
 	link* pre;
 	link* next;
 	layer_t* follow;
-	void* integrate_fn;
 
 	//phsical
 	unsigned long long gen;
@@ -73,8 +71,6 @@ struct link {
 	gen_w* t;
 	gen_w *dev_t;
 	link* another;
-	void* clear_push_fn;
-	void* push_fn;
 	link* follow;
 };
 
@@ -84,7 +80,6 @@ struct link {
 #define EXPORTS _declspec(dllimport)
 #endif
 extern "C" EXPORTS layer_t* pick_layer(int);
-extern "C" EXPORTS link* pick_link(int);
 extern "C" EXPORTS layer_t* has_layer_phsical(int, int);
 extern "C" EXPORTS layer_t* has_layer_logical(int, int, int, int, bool);
 extern "C" EXPORTS layer_t* has_link(int, link_type, layer_t*, int, layer_t*, int);
