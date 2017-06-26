@@ -2,6 +2,7 @@
 #include "ludwig_neural_network.h"
 
 layer_t* layer_list = NULL;
+link* link_list = NULL;
 
 layer_t* pick_layer(int idx) {
 	if (!layer_list) {
@@ -22,6 +23,27 @@ layer_t* pick_layer(int idx) {
 		}
 	}
 	ERR("COMPILE ERROR: LAYER[%d] NOT EXSISTS!\n", idx);
+}
+
+link* pick_link(int idx) {
+	if (!link_list) {
+		ERR("COMPILE ERROR: LINK[%d] NOT EXSISTS!\n", idx);
+	}
+	else {
+		if (link_list->id == idx) {
+			return link_list;
+		}
+		else {
+			link* iter = link_list;
+			while (iter->follow) {
+				if (iter->follow->id == idx) {
+					return iter->follow;
+				}
+				iter = iter->follow;
+			}
+		}
+	}
+	ERR("COMPILE ERROR: LINK[%d] NOT EXSISTS!\n", idx);
 }
 
 layer_t* has_layer_phsical(int id, int size) {
@@ -97,11 +119,18 @@ link* new_link(layer_t* layer, int size) {
 	ret->layer = layer;
 	ret->size = size;
 	ret->t = (gen_w*)malloc(sizeof(gen_w)*size);
-	//TODO: initialize gen_t
-	/*
-	cudaMalloc((void**)&ret->dev_t, size * sizeof(gen_w));
-	cudaMemcpy(ret->dev_t, ret->t, size * sizeof(gen_w), cudaMemcpyHostToDevice);
-	*/
+
+	if (!link_list) {
+		link_list = ret;
+	}
+	else {
+		link* iter = link_list;
+		while (iter->follow) {
+			iter = iter->follow;
+		}
+		iter->follow = ret;
+	}
+
 	return ret;
 }
 
