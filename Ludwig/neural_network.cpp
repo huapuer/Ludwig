@@ -111,12 +111,13 @@ layer_t* has_layer_logical(int id, int phsical, int offset, int size, bool deleg
 	return ret;
 }
 
-link* new_link(layer_t* layer, int size) {
+link* new_link(layer_t* layer, link_type type, int size) {
 	link* ret = (link*)malloc(sizeof(link));
 	memset(ret, 0, sizeof(link));
 	ret->mutated_gen = 0;
 	ret->mutating_batch = 0;
 	ret->layer = layer;
+	ret->type = type;
 	ret->size = size;
 	ret->t = (gen_w*)malloc(sizeof(gen_w)*size);
 
@@ -174,7 +175,7 @@ layer_t* has_link(int id, link_type type, layer_t* s, int or_another_s, layer_t*
 		size = s->size*next->size;
 		break;
 	}
-	link* l = new_link(next, size);
+	link* l = new_link(next, type, size);
 	add_link(&s->next, l);
 	return next;
 }
