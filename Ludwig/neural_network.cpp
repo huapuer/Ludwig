@@ -52,10 +52,10 @@ layer_t* has_layer_phsical(int id, int size) {
 	ret->id = id;
 	ret->type = LAYER_PHSICAL;
 	ret->size = size;
-	ret->working_gen = 0;
+	ret->pulling_gen = 0;
 	ret->integrated_gen = 0;
 	ret->swap_gen = 0;
-	ret->working_batch = 0;
+	ret->pulling_batch = 0;
 	ret->integrating_batch = 0;
 	ret->offset = 0;
 	ret->cur_s_dev_t = 0;
@@ -116,6 +116,7 @@ link* new_link(layer_t* layer, int id, link_type type, int size) {
 	memset(ret, 0, sizeof(link));
 	ret->mutated_gen = 0;
 	ret->mutating_batch = 0;
+	ret->pushed_gen = 0;
 	ret->layer = layer;
 	ret->id = id;
 	ret->type = type;

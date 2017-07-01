@@ -30,6 +30,7 @@ struct gen_w {
 	unsigned long long working_gen;
 	int stage;
 	float* t;
+	float* r;
 };
 
 struct layer_t {
@@ -42,10 +43,10 @@ struct layer_t {
 
 	//phsical
 	unsigned long long gen;
-	unsigned long long working_gen;
+	unsigned long long pulling_gen;
 	unsigned long long integrated_gen;
 	unsigned long long swap_gen;
-	unsigned long long working_batch;
+	unsigned long long pulling_batch;
 	unsigned long long integrating_batch;
 	gen_t host_t;
 	int cur_s_dev_t;
@@ -68,6 +69,7 @@ struct link {
 	link_type type;
 	unsigned long long gen;
 	unsigned long long mutated_gen;
+	unsigned long long pushed_gen;
 	unsigned long long mutating_batch;
 	layer_t* layer;
 	int size;
