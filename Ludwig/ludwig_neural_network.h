@@ -22,14 +22,14 @@ enum link_type {
 
 struct gen_t {
 	unsigned long long gen;
-	float t;
+	float* t;
 };
 
 struct gen_w {
 	unsigned long long gen;
 	unsigned long long working_gen;
 	int stage;
-	float t;
+	float* t;
 };
 
 struct layer_t {
@@ -47,10 +47,10 @@ struct layer_t {
 	unsigned long long swap_gen;
 	unsigned long long working_batch;
 	unsigned long long integrating_batch;
-	gen_t *t;
+	gen_t host_t;
 	int cur_s_dev_t;
 	int cur_t_dev_t;
-	gen_t *dev_t[2];
+	gen_t dev_t[2];
 	layer_t* logical_head;
 	layer_t* logical_tail;
 	layer_t* updated_pre;
@@ -71,8 +71,8 @@ struct link {
 	unsigned long long mutating_batch;
 	layer_t* layer;
 	int size;
-	gen_w* t;
-	gen_w *dev_t;
+	gen_w host_t;
+	gen_w dev_t;
 	link* another;
 	link* follow;
 };

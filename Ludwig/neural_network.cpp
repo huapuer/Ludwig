@@ -120,7 +120,6 @@ link* new_link(layer_t* layer, int id, link_type type, int size) {
 	ret->id = id;
 	ret->type = type;
 	ret->size = size;
-	ret->t = (gen_w*)malloc(sizeof(gen_w)*size);
 
 	if (!link_list) {
 		link_list = ret;
