@@ -111,13 +111,15 @@ layer_t* has_layer_logical(int id, int phsical, int offset, int size, bool deleg
 	return ret;
 }
 
-link* new_link(layer_t* layer, int id, link_type type, int size) {
+link* new_link(layer_t* s_layer, layer_t* t_layer, int id, link_type type, int size) {
 	link* ret = (link*)malloc(sizeof(link));
 	memset(ret, 0, sizeof(link));
 	ret->mutated_gen = 0;
 	ret->mutating_batch = 0;
+	ret->counting_batch = 0;
 	ret->pushed_gen = 0;
-	ret->layer = layer;
+	ret->t_layer = t_layer;
+	ret->s_layer = s_layer;
 	ret->id = id;
 	ret->type = type;
 	ret->size = size;
@@ -136,17 +138,31 @@ link* new_link(layer_t* layer, int id, link_type type, int size) {
 	return ret;
 }
 
-void add_link(link** head, link* next) {
+void add_link_next(link** head, link* next) {
 	if (!*head) {
 		*head = next;
 		return;
 	}
 	else {
 		link* tail = *head;
-		while (tail->another) {
-			tail = tail->another;
+		while (tail->another_next) {
+			tail = tail->another_next;
 		}
-		tail->another = next;
+		tail->another_next = next;
+	}
+}
+
+void add_link_pre(link** head, link* next) {
+	if (!*head) {
+		*head = next;
+		return;
+	}
+	else {
+		link* tail = *head;
+		while (tail->another_pre) {
+			tail = tail->another_pre;
+		}
+		tail->another_pre = next;
 	}
 }
 
@@ -176,7 +192,8 @@ layer_t* has_link(int id, link_type type, layer_t* s, int or_another_s, layer_t*
 		size = s->size*next->size;
 		break;
 	}
-	link* l = new_link(next, id, type, size);
-	add_link(&s->next, l);
+	link* l = new_link(s, next, id, type, size);
+	add_link_next(&s->next, l);
+	add_link_pre(&next->pre, l);
 	return next;
 }

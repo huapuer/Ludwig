@@ -71,11 +71,14 @@ struct link {
 	unsigned long long mutated_gen;
 	unsigned long long pushed_gen;
 	unsigned long long mutating_batch;
-	layer_t* layer;
+	unsigned long long counting_batch;
+	layer_t* t_layer;
+	layer_t* s_layer;
 	int size;
 	gen_w host_t;
 	gen_w dev_t;
-	link* another;
+	link* another_next;
+	link* another_pre;
 	link* follow;
 };
 
