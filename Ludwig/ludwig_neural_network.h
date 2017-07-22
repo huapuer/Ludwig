@@ -31,6 +31,9 @@ struct gen_w {
 	int stage;
 	float* t;
 	float* r;
+	float* r2;
+	float* pr;
+	float* po;
 };
 
 struct layer_t {
