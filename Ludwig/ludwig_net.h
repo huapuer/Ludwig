@@ -1,9 +1,5 @@
 #pragma once
-
-enum net_events{
-	EVENT_TEST,
-	_EVENT_COUNT_
-};
+#include "profile.h"
 
 typedef void(*fp_event_callback)(char*, int);
 fp_event_callback friedrich_acts_table[_EVENT_COUNT_];
