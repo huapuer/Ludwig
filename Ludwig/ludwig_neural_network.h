@@ -55,6 +55,11 @@ struct layer_t {
 	int cur_s_dev_t;
 	int cur_t_dev_t;
 	gen_t dev_t[2];
+	gen_t norm;
+	gen_t lmbd;
+	bool out;
+	gen_t out_b;
+	gen_t out_a;
 	layer_t* logical_head;
 	layer_t* logical_tail;
 	layer_t* updated_pre;
@@ -92,6 +97,6 @@ struct link {
 #endif
 extern "C" EXPORTS layer_t* pick_layer(int);
 extern "C" EXPORTS link* pick_link(int);
-extern "C" EXPORTS layer_t* has_layer_phsical(int, int);
+extern "C" EXPORTS layer_t* has_layer_phsical(int, int, bool);
 extern "C" EXPORTS layer_t* has_layer_logical(int, int, int, int, bool);
 extern "C" EXPORTS layer_t* has_link(int, link_type, layer_t*, int, layer_t*, int);

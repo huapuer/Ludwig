@@ -46,7 +46,7 @@ link* pick_link(int idx) {
 	ERR("COMPILE ERROR: LINK[%d] NOT EXSISTS!\n", idx);
 }
 
-layer_t* has_layer_phsical(int id, int size) {
+layer_t* has_layer_phsical(int id, int size, bool out) {
 	layer_t* ret = (layer_t*)malloc(sizeof(layer_t));
 	memset(ret, 0, sizeof(layer_t));
 	ret->id = id;
@@ -61,6 +61,7 @@ layer_t* has_layer_phsical(int id, int size) {
 	ret->cur_s_dev_t = 0;
 	ret->cur_t_dev_t = 1;
 	ret->phsical = ret;
+	ret->out = out;
 
 	if (!layer_list) {
 		layer_list = ret;
