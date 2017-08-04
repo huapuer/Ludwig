@@ -1,5 +1,5 @@
-#include "ludwig_net.h"
-#ifdef NET_
+#include "ludwig_net_sync.h"
+#ifdef NET_SYNC
 
 #include <stdio.h>
 #include <winsock2.h>
@@ -10,11 +10,6 @@
 
 SOCKET friedrich_socket;
 SOCKET alan_socket;
-
-struct net_config {
-	char* ip_addr;
-	int port;
-};
 
 struct net_buffer {
 	char* buff;
@@ -100,92 +95,72 @@ void pack(net_events ne, char* c, unsigned long size, SOCKET socket) {
 	send(socket, p, header_len + size, 0);
 }
 
-DWORD WINAPI fiedrich_thread(LPVOID pM)
-{
-	net_config* cfg= (net_config*)pM;
-
-    //初始化WSA
-    WORD sockVersion = MAKEWORD(2,2);
-    WSADATA wsaData;
-    if(WSAStartup(sockVersion, &wsaData)!=0)
-    {
-        return 0;
-    }
-
-    //创建套接字
-    SOCKET slisten = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if(slisten == INVALID_SOCKET)
-    {
-        printf("socket error !");
-        return 0;
-    }
-
-    //绑定IP和端口
-    sockaddr_in sin;
-    sin.sin_family = AF_INET;
-    sin.sin_port = htons(cfg->port);
-    sin.sin_addr.S_un.S_addr = INADDR_ANY; 
-    if(bind(slisten, (LPSOCKADDR)&sin, sizeof(sin)) == SOCKET_ERROR)
-    {
-        printf("bind error !");
-    }
-
-    //开始监听
-    if(listen(slisten, 5) == SOCKET_ERROR)
-    {
-        printf("listen error !");
-        return 0;
-    }
-
-    //循环接收数据
-    sockaddr_in remoteAddr;
-    int nAddrlen = sizeof(remoteAddr);
-    printf("等待连接...\n");
-	alan_socket = accept(slisten, (SOCKADDR *)&remoteAddr, &nAddrlen);
-    if(alan_socket == INVALID_SOCKET)
-    {
-        printf("accept error !");
-    }
-	char IPdotdec[20];
-	inet_ntop(AF_INET, &remoteAddr.sin_addr, IPdotdec, 16);
-    printf("接受到一个连接：%s \r\n", IPdotdec);
-
-	char recvData[255];
-	net_buffer* nb = new(net_buffer);
-	while (true) {
-		//接收数据
-		int ret = recv(alan_socket, recvData, 255, 0);
-		if (ret > 0)
-		{
-			unpack(nb, recvData, ret, friedrich_acts_table);
-		}
-	}
-    
-    closesocket(slisten);
-    WSACleanup();
-    return 0;
-}
-
-DWORD WINAPI alan_thread(LPVOID pM)
-{
-	char recvData[255];
-	net_buffer* nb = new(net_buffer);
-	while (true) {
-		int ret = recv(friedrich_socket, recvData, 255, 0);
-		if (ret > 0)
-		{
-			unpack(nb, recvData, ret, alan_acts_table);
-		}
-	}
-	closesocket(friedrich_socket);
-	WSACleanup();
-	return 0;
-}
+SOCKET friedrich_listen;
 
 void friedrich_talking(int port) {
-	net_config* cfg = new net_config();
-	cfg->port = port;
-	HANDLE handle = CreateThread(NULL, 0, fiedrich_thread, cfg, 0, NULL);
+	//初始化WSA
+	WORD sockVersion = MAKEWORD(2, 2);
+	WSADATA wsaData;
+	if (WSAStartup(sockVersion, &wsaData) != 0)
+	{
+		exit(1);
+	}
+
+	//创建套接字
+	friedrich_listen = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if (friedrich_listen == INVALID_SOCKET)
+	{
+		printf("socket error !");
+		exit(1);
+	}
+
+	//绑定IP和端口
+	sockaddr_in sin;
+	sin.sin_family = AF_INET;
+	sin.sin_port = htons(port);
+	sin.sin_addr.S_un.S_addr = INADDR_ANY;
+	if (bind(friedrich_listen, (LPSOCKADDR)&sin, sizeof(sin)) == SOCKET_ERROR)
+	{
+		printf("bind error !");
+		exit(1);
+	}
+
+	//开始监听
+	if (listen(friedrich_listen, 5) == SOCKET_ERROR)
+	{
+		printf("listen error !");
+		exit(1);
+	}
+}
+
+void friedrich_hearing() {
+	//循环接收数据
+	sockaddr_in remoteAddr;
+	int nAddrlen = sizeof(remoteAddr);
+	printf("等待连接...\n");
+	alan_socket = accept(friedrich_listen, (SOCKADDR *)&remoteAddr, &nAddrlen);
+	if (alan_socket == INVALID_SOCKET)
+	{
+		printf("accept error !");
+	}
+	char IPdotdec[20];
+	inet_ntop(AF_INET, &remoteAddr.sin_addr, IPdotdec, 16);
+	printf("接受到一个连接：%s \r\n", IPdotdec);
+
+	char recvData[255];
+	net_buffer* nb = new(net_buffer);
+
+	//接收数据
+	int ret = recv(alan_socket, recvData, 255, 0);
+	if (ret > 0)
+	{
+		unpack(nb, recvData, ret, friedrich_acts_table);
+	}
+}
+
+void friedrich_quiet() {
+	closesocket(friedrich_listen);
+	WSACleanup();
 }
 
 void alan_talking(char* ip_addr, int port) {
@@ -193,14 +168,14 @@ void alan_talking(char* ip_addr, int port) {
 	WSADATA data;
 	if (WSAStartup(sockVersion, &data) != 0)
 	{
-		return;
+		exit(1);
 	}
 
 	friedrich_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (friedrich_socket == INVALID_SOCKET)
 	{
 		printf("invalid socket !");
-		return;
+		exit(1);
 	}
 
 	sockaddr_in serAddr;
@@ -208,8 +183,21 @@ void alan_talking(char* ip_addr, int port) {
 	serAddr.sin_port = htons(port);
 	inet_pton(AF_INET, ip_addr, &serAddr.sin_addr.S_un.S_addr);
 	while (connect(friedrich_socket, (sockaddr *)&serAddr, sizeof(serAddr)) == SOCKET_ERROR);
+}
 
-	HANDLE handle = CreateThread(NULL, 0, alan_thread, NULL, 0, NULL);
+void alan_hearing() {
+	char recvData[255];
+	net_buffer* nb = new(net_buffer);
+	int ret = recv(friedrich_socket, recvData, 255, 0);
+	if (ret > 0)
+	{
+		unpack(nb, recvData, ret, alan_acts_table);
+	}
+}
+
+void alan_quiet() {
+	closesocket(friedrich_socket);
+	WSACleanup();
 }
 
 void friedrich_acts(net_events ne, fp_event_callback ec) {

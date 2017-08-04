@@ -1,5 +1,8 @@
 #pragma once
 
+//#define NET_
+#define NET_SYNC
+
 #define PROFILE_PROTOCAL_TETRIS
 
 #ifdef PROFILE_PROTOCAL_TETRIS
