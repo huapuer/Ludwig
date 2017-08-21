@@ -34,6 +34,8 @@ struct gen_w {
 	float* r2;
 	float* pr;
 	float* po;
+	float* pr_sum;
+	float* po_sum;
 };
 
 struct layer_t {
