@@ -36,7 +36,8 @@ unsigned int chars2uint(char* src) {
 
 int test_count = 0;
 
-void unpack(net_buffer* buff, char* recv_content, unsigned long len, fp_event_callback* callbacks) {
+bool unpack(net_buffer* buff, char* recv_content, unsigned long len, fp_event_callback* callbacks) {
+	bool ret = false;
 	unsigned long total_len = buff->recv_len + len;
 	if (total_len > buff->buff_len) {
 		char* old_buff = buff->buff;
@@ -64,11 +65,14 @@ void unpack(net_buffer* buff, char* recv_content, unsigned long len, fp_event_ca
 			buff->recv_len -= buff->decl_len;
 			memcpy(buff->buff, buff->buff + buff->decl_len, buff->recv_len);
 			buff->decl_len = 0;
+
+			ret = true;
 		}
 		else {
 			break;
 		}
 	}
+	return ret;
 }
 
 void ulong2chars(unsigned long val, char* dst) {
@@ -131,10 +135,7 @@ void friedrich_talking(int port) {
 		printf("listen error !");
 		exit(1);
 	}
-}
 
-void friedrich_hearing() {
-	//循环接收数据
 	sockaddr_in remoteAddr;
 	int nAddrlen = sizeof(remoteAddr);
 	printf("等待连接...\n");
@@ -146,15 +147,22 @@ void friedrich_hearing() {
 	char IPdotdec[20];
 	inet_ntop(AF_INET, &remoteAddr.sin_addr, IPdotdec, 16);
 	printf("接受到一个连接：%s \r\n", IPdotdec);
+}
 
+net_buffer friedrich_nb;
+void friedrich_hearing() {
 	char recvData[255];
-	net_buffer* nb = new(net_buffer);
+	net_buffer nb;
 
 	//接收数据
-	int ret = recv(alan_socket, recvData, 255, 0);
-	if (ret > 0)
-	{
-		unpack(nb, recvData, ret, friedrich_acts_table);
+	while (true) {
+		int ret = recv(alan_socket, recvData, 255, 0);
+		if (ret > 0)
+		{
+			if (unpack(&friedrich_nb, recvData, ret, friedrich_acts_table)) {
+				break;
+			}
+		}
 	}
 }
 
@@ -185,13 +193,17 @@ void alan_talking(char* ip_addr, int port) {
 	while (connect(friedrich_socket, (sockaddr *)&serAddr, sizeof(serAddr)) == SOCKET_ERROR);
 }
 
+net_buffer alan_nb;
 void alan_hearing() {
 	char recvData[255];
-	net_buffer* nb = new(net_buffer);
-	int ret = recv(friedrich_socket, recvData, 255, 0);
-	if (ret > 0)
-	{
-		unpack(nb, recvData, ret, alan_acts_table);
+	while (true) {
+		int ret = recv(friedrich_socket, recvData, 255, 0);
+		if (ret > 0)
+		{
+			if (unpack(&alan_nb, recvData, ret, alan_acts_table)) {
+				break;
+			}
+		}
 	}
 }
 
